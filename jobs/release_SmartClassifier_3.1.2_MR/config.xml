@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Release build of SmartClassifier 3.1.2 MR code&#xd;
+&lt;br/&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;- builds code from&#xd;
+&lt;br/&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;- repo: https://bitbucket.org/nxtlbs-devops/smartclassifier&#xd;
+&lt;br/&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;- branch: v3.1.2_MR</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28"/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.0.5">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@bitbucket.org:nxtlbs-devops/smartclassifier.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>origin/v3.1.2_MR</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>export NLEXTERNALDIR=D:/P4/main_external
+export JAVA_HOME=${NLEXTERNALDIR2}/j2sdk/jdk1.7.0_75
+
+cd ${WORKSPACE}
+
+############################
+# Clean the workspace
+############################
+git clean -fd &amp;&amp; true
+git add .
+git stash &amp;&amp; true
+git stash drop &amp;&amp; true
+############################
+
+# Build the common library
+cd ${WORKSPACE}/CommonLibrary/
+source ./setEnv
+./buildRelease
+
+# Build DocumentExtractor module
+cd ${WORKSPACE}/DocumentExtractor/
+source ./setEnv
+./buildRelease
+
+# Copy nextlabs-document-extractor.jar needed for Extractor build
+if [ -f &quot;${WORKSPACE}/FileExtractor/build/nextlabs-document-extractor.jar&quot; ] ; then
+  cp ${WORKSPACE}/FileExtractor/build/nextlabs-document-extractor.jar ${WORKSPACE}/Extractor/lib/jar/
+fi
+
+# Build Watcher module
+cd ${WORKSPACE}/Watcher/
+source ./setEnv
+./buildRelease
+
+# Build Extractor module
+cd ${WORKSPACE}/Extractor/
+source ./setEnv
+./buildRelease
+
+# Build RuleEngine module
+cd ${WORKSPACE}/RuleEngine/
+source ./setEnv
+./buildRelease
+
+# Build Indexer module
+cd ${WORKSPACE}/Indexer/
+source ./setEnv
+./buildRelease
+
+# Build Plugin module
+cd ${WORKSPACE}/Plugin/
+source ./setEnv
+./buildRelease
+
+# Build WebUI module
+cd ${WORKSPACE}/WebUI/
+source ./setEnv
+./buildRelease
+
+#######################################
+
+# Finally, perform nsis install creation
+cd ${WORKSPACE}/Installer/
+source ./setEnv
+./buildRelease
+
+## EOF ##
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.57">
+      <recipientList>$DEFAULT_RECIPIENTS, ShahNeng.Chok@nextlabs.com, Puneet.Kalra@nextlabs.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>default</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>$DEFAULT_CONTENT</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <postsendScript></postsendScript>
+      <attachBuildLog>false</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo>$DEFAULT_REPLYTO</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>
